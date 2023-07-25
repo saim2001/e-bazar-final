@@ -1,0 +1,28 @@
+
+{% extends 'Verification/main.html' %}
+{% block options %}
+                {% endblock options %}
+{% block content %}
+  <div class="avContainer" id="avContainerid">
+
+
+                
+
+                {% comment %} <span class='active' onclick="AccountVerification('disputedId')">Disputed</span> {% endcomment %}
+                {% block subContent %}
+               
+                {{ block.super }}
+
+                {% endblock %}
+
+                
+
+  </div>
+
+  {% block scripts %}
+
+{% endblock %}
+
+
+
+{% endblock %}

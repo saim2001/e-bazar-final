@@ -1,0 +1,16 @@
+{% extends 'Verification/main.html' %}
+{% block content %}
+
+
+<div id="confirmationid">
+    <h1>Confirm verification</h1>
+    <hr>
+    <a href="{% url 'avPending' %}">  <button id='backId'>Back to List</button>
+    <a href="{% url 'changestatus' vendor_id 'verify'  %}">  <button id='pendingId'>Verify</button>
+    <a href="{% url 'changestatus' vendor_id 'dispute'  %}">  <button id='disputedId'>Disputed</button>
+    
+ 
+</div>
+
+{% endblock %}
+

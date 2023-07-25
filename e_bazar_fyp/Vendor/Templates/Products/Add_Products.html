@@ -1,0 +1,420 @@
+{% extends "Base.html" %}
+{% load static %}    
+
+
+
+<html>
+
+<body>
+{% block name %}
+<p> {{user_info.firstName}} {{user_info.middleName}} {{user_info.lastName}}</p>
+{% endblock name %}
+{% block storename %}
+<p> {{user_info.storename}}</p>
+{% endblock storename %}
+      
+    {% block content %}
+ 
+<main class="mt-5 ms-5">
+  <p class="h1 text-black">Add product</p>
+  <br>
+<p class="h2 text-black">{{category}}</p>
+<div class="tabs">
+<button class="tablink" onclick="openPage('Product_identity', this, 'white', 'inside')" id="default">Product</button>
+<button class="tablink" id="var_btn" onclick="openPage('variations', this, 'white', 'inside'); createVarhtml()">Variations</button>
+<button class="tablink" onclick="openPage('information', this, 'white', 'inside')" >Information</button>
+<button class="tablink" onclick="openPage('Description', this, 'white', 'inside')">description</button>
+
+</div>
+<br>
+<hr>
+  {% if product %}
+  <form action="{% url 'Vendor:update_product' product.id %}" id="formMain" method="post" enctype="multipart/form-data">
+  {% else %}
+ <form action="{% url 'Vendor:insertpro' %}" id="formMain" method="post" enctype="multipart/form-data">
+  {% endif %}
+
+<div id="Product_identity" class="tabcontent">
+     {% csrf_token %}
+
+      <table >
+        <tr>
+          <td><label >Category:</label></td>
+          <td>
+            <input  id="cat_name" type="text" name="category" value="{{category}}" readonly>
+          </td>
+        </tr>
+        <tr>
+       <td><label >Variations:</label></td>
+       <td>
+   
+          <div id="variations_div" >
+            <div class="radio_variation">
+            <p>Does the product have variations ?</p>
+           
+            
+            <div class="radio">
+            <label for="var_yes">Yes</label>
+    <input  type="radio" class="m-1"  id="var_yes" name="options" value="yes" onclick="showVar()"> 
+    
+    <label for="var_no">No</label>
+    <input class="m-1" type="radio" id="var_no" name="options" value="no" checked onclick="hideVar()">
+   
+    </div>
+    <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Variations could like size, colors, style etc"  style="color: transparent;">
+      <i class="fa-regular fa-circle-question fa-lg" style="color: #000000;"></i>
+    </button>
+    </div>
+    
+    </div>
+   
+        
+       
+
+</td>
+</tr>
+
+<tr><td colspan="2">
+  <p id="var_p" style="display:none;"><button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Which of these attributes are different across the product variant ? You can add custom also.  "  style="color: transparent;">
+    <i class="fa-regular fa-circle-question fa-lg" style="color: #000000;"></i>
+  </button></p>
+<div id="variations_enable" >
+
+
+  <div class="variations">
+  <input class="varValue" type="checkbox" id="var_style" value="style">
+  <label for="var_style">Style</label>
+    </div>
+
+  <div class="variations">
+    <input class="varValue" type="checkbox" id="var_size" value="size">
+    <label for="var_style">Size</label>
+      </div>
+
+  <div class="variations">
+    <input class="varValue" type="checkbox" id="var_color" value="color">
+    <label for="var_style">Color</label>
+      </div>
+
+  <div class="variations var_custom">
+    <input  id='ch_1' type="checkbox" >
+    <input class="varValue" type="text" maxlength="20" disabled>
+      </div>
+  
+  <div class="variations var_custom">
+    <input id="ch_2" type="checkbox" >
+    <input class="varValue" type="text" maxlength="20" disabled>
+      </div> 
+
+    
+
+</div>
+
+</td></tr>
+        <!-- <tr class="singleProduct">          
+       <td><label for="code">UPC/EAN (if any):</label></td>
+      <td><input type="text" id="code" name="code"></td>
+      <td><select name="codetype" id="codetype">
+      <option value="upc">UPC</option>
+      <option value="ean">EAN</option>
+      </select></td>
+      </tr> -->
+
+      <tr>
+        <td><label for="b2bsingle">Enable B2B</label></td>
+        <td>
+          <div id="b2bsingle" class="radio">
+            <label for="b2b_yes">Yes</label>
+            <input class="m-1" type="radio" id="b2b_yes" name="B2Boptions" value="yes" onclick="showB2B()">     
+            <label for="b2b_no">No</label>
+            <input  type="radio"  id="b2b_no" name="B2Boptions" value="no" checked onclick="hideB2B()">
+            <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="top" title="You can enable it if you are offering products to businesses"  style="color: transparent;">
+              <i class="fa-regular fa-circle-question fa-lg" style="color: #000000;"></i>
+            </button>
+    </div>
+        </td>
+    </tr>
+
+    <tr>
+      <td><label for="onlyb2b">Only B2B</label></td>
+    <td><input type="checkbox" id="onlyb2b" name="onlyb2b" value="yes" disabled onclick="onlyBtoB()"></td>
+    </tr>
+
+
+      <tr class="singleProduct">
+      <td><label >Product SKU: <span class="required">*</span></label></td>
+
+      <td><input type="text" name="skuSingle" ></td>
+      </tr>
+
+      <tr>
+        <td><label for="productname">Product name:<span class="required">*</span></label></td>
+
+      <td><input type="text" id="productname" name="productname" required></td>
+      </tr>
+
+      <tr>
+      <td><label for="brand">Brand name:</label></td>
+      <td><input type="text" id="brand" name="brand"></td>
+  </tr>
+
+      <tr>
+        <td><label for="isbrand">No brand name</label></td>
+      <td><input type="checkbox" id="isbrand" name="isbrand" value="1" onclick="EnableTextbox('isbrand','brand','false')">
+      
+        <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Product you sell can be of other brand or your own products"  style="color: transparent;">
+          <i class="fa-regular fa-circle-question fa-lg" style="color: #000000;"></i>
+        </button></td>
+      
+      </tr>
+
+
+      <tr class="singleProduct">
+      <td><label>Image:</label></td>
+        <td><input class="no-border" type="file" name="imageSingle" ></td>
+        </tr>
+
+      <tr class="singleProduct">
+        <td><label>Image: </label></td>
+        <td><input class="no-border" type="file" name="imageSingle" ></td>
+        </tr>
+
+      <tr class="singleProduct onlyb2bfields" >
+        <td><label for="unitsSingle">Units:<span class="required">*</span></label></td>
+        <td><input type="number" id="unitsSingle" name="unitsSingle"></td>
+    </tr>
+
+    <tr class="singleProduct onlyb2bfields" >
+      <td><label for="priceSingle">Price:<span class="required">*</span></label></td>
+      <td><input type="number" id="priceSingle" name="priceSingle"></td>
+  </tr>
+
+  <tr class="singleProduct">
+    <td><label>Condition:<span class="required">*</span></label></td>
+    <td><select name="conditionSingle" required>
+      <option selected value="new">New</option>
+      <option value="old">Old</option>
+    </select></td>
+    
+</tr>
+
+
+<tr class="b2bBatches" style="display: none;">
+  <td><label for="batchUnits1">Batch 1 units:</label></td>
+  <td><input type="number" id="batchUnits1" name="batchUnits1" value="0"></td>
+</tr>
+
+<tr class="b2bBatches" style="display: none;">
+  <td><label for="batchPrice1">Batch 1 price/unit:</label></td>
+  <td><input type="number" id="batchPrice1" name="batchPrice1" value="0"></td>
+</tr>
+
+<tr class="b2bBatches" style="display: none;">
+  <td><label for="batchUnits2">Batch 2 units:</label></td>
+  <td><input type="number" id="batchUnits2" name="batchUnits2" value="0"></td>
+</tr>
+
+<tr class="b2bBatches" style="display: none;">
+  <td><label for="batchPrice2">Batch 2 price/unit:</label></td>
+  <td><input type="number" id="batchPrice2" name="batchPrice2" value="0"></td>
+</tr>
+
+<tr class="b2bBatches" style="display: none;">
+  <td><label for="batchUnits3">Batch 3 units:</label></td>
+  <td><input type="number" id="batchUnits3" name="batchUnits3" value="0"></td>
+</tr>
+
+<tr class="b2bBatches" style="display: none;">
+  <td><label for="batchPrice3">Batch 3 price/unit:</label></td>
+  <td><input type="number" id="batchPrice3" name="batchPrice3" value="0"></td>
+</tr>
+
+
+    </table>
+</div>
+
+<!-- variations tab -->
+<!-- if variations are not allowed -->
+<div id="noVariations" class="tabcontent" >
+  <p>Variations not allowed. Go to Product information tab to add variations</p>
+
+</div>
+
+<!-- if variations are allowed to  yes -->
+<div id="variations" class="tabcontent" >
+
+  <div style="border-bottom: 1px solid black;">
+  <div id="variation_type" >
+      <h3>Variation types:</h3>
+  </div>
+  <p>You can change these variations in the product information tab</p>
+
+</div>
+
+
+
+<div id="autoCont">
+<!-- div for javscript content -->
+</div>
+
+<button style="margin-top: 20px;" type="button" class="btn btn-primary" onclick="createVariations()">Create variations</button>
+
+<div style="display: none; margin-top: 40px;" class="table-responsive" id="varTableDiv">
+  <button type="button" onclick="deleteSelectedRows()">Delete Selected Rows</button>
+
+  <table class="table" id="varTable">
+    <thead>
+      <tr id="varHead">
+        <th scope="col"></th>
+        <th scope="col">#</th>
+        <th scope="col">Seller SKU <span class="required">*</span></th>
+        <th scope="col">Condition <span class="required">*</span></th>
+        <th scope="col">Main Page<span class="required">*</span></th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      <!-- <tr>
+        
+        <td><input type="checkbox" onclick="selectRow(this)"/></td>
+        <th scope="row">1</th>
+        <td><input name="sku" type="text" required></td>
+        <td><input name="units" type="text" required></td>
+        <td><select name="condition" class="form-select" aria-label="Default select example" required>
+          <option selected value="new">New</option>
+          <option value="old">Old</option>
+        </select></td>
+        <td><input name="price" type="text" required></td>
+        <td><input name="image" type="file" required ></td>
+        <td><input type="radio" name="mainPage" value="no" checked></td>
+
+      </tr> -->
+    </tbody>
+  </table>
+</div>
+
+<div id="imagesdiv" style="display: none; margin-top: 40px;">
+  <h3>Add Images</h3>
+  
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+  <div class="input-group mb-3">
+    <input type="file" name="images" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+
+</div>
+
+</div>
+
+<div id="Description" class="tabcontent">
+
+  <table>
+    <tr id="descriptionRow">
+      <td><label for="descriptionPara">Description<span class="required">*</span></label></td>
+      <td><textarea name="descriptionPara" id="descriptionPara" maxlength="500" rows="4" cols="50"></textarea>
+    </tr>
+    <tr id="bulletsRow">
+      <td valign="top"><label>Bullet points</label></td>
+      <td ><input type="text" name="points">
+        <input type="text"  name="points">
+        <input type="text" name="points">
+        <input type="text" name="points">
+        <input type="text" name="points"></td>
+    </tr>
+  </table>
+</div>
+
+
+<div id="information" class="tabcontent">
+  <table>
+    <tr>
+      <td><label for="manufacturer">Manufacturer :<span class="required">*</span></label></td>
+      <td><input type="text" id="manufacturer" name="manufacturer" required></td>
+    </tr>
+    <tr>
+      <td><label for="expireDate">Expire date :</label></td>
+      <td><input type="date" id="expireDate" name="expireDate"></td>
+    </tr>
+    <tr>
+      <td valign="top"><label >Product dimensions <span class="required">*</span></label></td>
+      <td valign="top">
+        <table>
+        <tr>
+          <td><label for="length">Length(cm): </label></td>
+          <td><input type="text" id="length" name="length"required></td>      
+        </tr>
+        <tr>
+          <td><label for="width">Width(cm): </label></td>
+          <td><input type="text" id="width" name="width" required></td>      
+        </tr>
+        <tr>
+          <td><label for="height">height(cm): </label></td>
+          <td><input type="text" id="height" name="height" required></td>      
+        </tr>
+        </table>  
+      </td>
+    </tr>
+    <tr>
+      <td><label for="weight">Weight (grams):<span class="required">*</span></label></td>
+      <td><input type="text" id="weight" name="weight" required></td>
+    </tr>
+  </table>
+</div>
+
+<!-- end -->
+{% if product %}
+  <button style="float: right;margin-top: 20px;"  id="submit-form" type="submit" class="btn btn-success bg-gradient text-white btn-outline-dark">Update</button>
+  {% else %}
+  <button style="float: right;margin-top: 20px;"  id="submit-form" type="submit" class="btn btn-success bg-gradient text-white btn-outline-dark">Save and continue</button>
+  {% endif %}
+    </form>
+
+</div>
+</main>
+<link rel="stylesheet" href="{% static 'css/add_product.css' %}">
+
+<script type="text/javascript" src="{% static 'js/add_product.js' %}"></script>
+
+{% if product %}
+<!--  {{ product|json_script }}-->
+        {{ product|json_script:"my-data" }}
+
+    {% endif %}
+    
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,22 @@
+{% load static %}
+
+{% block content %}
+<head>
+    <link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">
+</head>
+
+
+
+    <div class="accountVerification">
+
+        <h1 id="topHeadingId">{% block heading %}
+        {% endblock heading %}
+        </h1>
+        <input type="text" >
+        <button>Search</button>
+
+
+
+    </div>
+
+{% endblock %}

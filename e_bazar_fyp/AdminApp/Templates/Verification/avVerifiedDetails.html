@@ -1,0 +1,170 @@
+{% extends 'Verification/main.html' %}
+{% block content %}
+
+
+<div class="tableContainer" id="accVPDId">
+    <h4>Primary information</h4>
+    <table class="table">
+
+
+
+        <tr>
+
+            <td>Name</td>
+            <td>{{vendor.firstName}} {{vendor.middleName}} {{vendor.lastName}}</td>
+        </tr>
+        <tr>
+
+            <td>Date of birth</td>
+            <td>{{vendor.dto}}</td>
+        </tr>
+        <tr>
+
+            <td>City</td>
+            <td>{{vendor.city}}</td>
+        </tr>
+        <tr>
+
+            <td>Province</td>
+            <td>{{vendor.province}}</td>
+        </tr>
+
+        <tr>
+
+            <td>Address line 1</td>
+            <td>{{vendor.address1}}</td>
+        </tr>
+
+        <tr>
+
+            <td>Address line 2</td>
+            <td>{{vendor.address2}}</td>
+        </tr>
+
+        <tr>
+
+            <td>Business Type</td>
+            <td>{{vendor.businessType}}</td>
+        </tr>
+
+        <tr>
+
+            <td>Postal Code</td>
+            <td>{{vendor.postalCode}}</td>
+        </tr>
+        <tr>
+
+            <td>National Identification number</td>
+            <td>{{vendor.cnic}}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Phone number</td>
+            <td>+92 {{vendor.phoneNo}}</td>
+        </tr>
+        <tr>
+
+            <td>Residential address</td>
+            <td>{{vendor.addDetail}}</td>
+        </tr>
+    </table>
+
+    <h4>Credit card information</h4>
+    <table class="table">
+
+
+        <tr>
+            <td>Card holder name</td>
+            <td>{{vendor.cardHolder}}</td>
+        </tr>
+
+        <tr>
+            <td>Credit card number </td>
+            <td>{{vendor.creditCard}}</td>
+        </tr>
+        <tr>
+
+            <td>Billing address</td>
+            <td>{{vendor.billingAddress}}</td>
+        </tr>
+
+    </table>
+
+
+    <h4>Store information
+    </h4>
+    <table class="table">
+
+        <tr>
+
+            <td>Store name </td>
+            <td>{{vendor.storename}}</td>
+        </tr>
+
+        <tr>
+
+            <td>Bussiness type</td>
+            <td>{{vendor.businessType}}</td>
+        </tr>
+
+        <tr>
+
+            <td>Is Manufacturer ?</td>
+            <td>{{vendor.isManufacturer}}</td>
+        </tr>
+
+
+    </table>
+    <h4>Documents
+
+    </h4>
+    <table class="table">
+
+        <tr>
+
+            <td>National identity Card Front </td>
+            <td>
+                <img src="{{vendor.cnicFront}}"
+                    alt="Document" width="200" height="200">
+                <a href="{{vendor.cnicFront}}" download=""><button class="btn">Download</button></a>
+
+            </td>
+        </tr>
+        <tr>
+
+            <td>National identity Card Back </td>
+            <td>
+                <img src="{{vendor.cnicBack}}"
+                    alt="Document">
+
+                <a href="{{vendor.cnicBack}}" download=""><button class="btn">Download</button></a>
+            </td>
+        </tr>
+
+        <tr>
+
+            <td>Bank Statement </td>
+            <td>
+                <img src="{{vendor.bankStatement}}"
+                    alt="Document">
+
+                <a href="{{vendor.bankStatement}}" download=""><button class="btn">Download</button></a>
+            </td>
+        </tr>
+
+
+
+    </table>
+ 
+    <a href="{% url 'avPending' %}">  <button id='pendingId'>Back to List</button></a>
+    <a href="{% url 'avPendingConfirmation' vendor.id %}">   <button >Verify</button>
+    </a>
+   
+   
+
+</div>
+
+
+{% endblock %}
