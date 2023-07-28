@@ -179,8 +179,59 @@ class vendorRegister:
     def logout(self,request):
         del request.session["Vendor_Db"]
         return redirect("Vendor:renDashbrd")
+    
+    def calculate_sales_and_expenses(self,transacions):
+
+        total_sales = 0
+        total_expenses = 0
+
+        if len(transacions) != 0 :
+            for transaction in transacions:
+                if transaction['type'] == 'credit':
+                    total_sales += transaction['amount']
+                elif transaction['type'] == 'debit':
+                    total_expenses += transaction['amount']
+        else:
+            pass
+
+
+        return total_sales, total_expenses
+    
+    def calculate_held_funds(self,transactions,holding_period):
+    # Retrieve transactions under the hold_period and sum up the amounts
+        held_funds = 0
+        current_date = datetime.datetime.now()
+        for transaction in transactions:
+            trans_date = datetime.datetime.strptime(transactions['date'],"%Y-%m-%d")
+            time_diff = current_date - trans_date
+            if transaction['type'] == 'credit' and time_diff > datetime.timedelta(days=holding_period):
+                held_funds += transaction['amount']
+        return held_funds
+
     def renWallet(self,request):
         info = self.getUser(request)
+        db = utils.connect_database(str(info['_id']))
+        walletexists = 'Wallet' in db.list_collection_names()
+        if walletexists == False:
+            wallet = db["Wallet"]
+            wallet.insert_one(
+                {
+                    'balance' : 0,
+                    'hold_period' : 2,
+                    'transactions' : {
+                    },
+                    'withdrawal_requests' : {
+
+                    }
+                }
+            )
+        wallet_data = wallet.find_one({})
+        sales,expenses = self.calculate_sales_and_expenses(wallet_data['transactions'])
+        wallet_data['sales'] = sales
+        wallet_data['expenses'] = expenses
+
+
+
         return render(request, 'Seller_wallet/Wallet.html',context=info)
 
     def renPayout(self,request):
