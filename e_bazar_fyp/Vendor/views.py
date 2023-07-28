@@ -223,16 +223,19 @@ class vendorRegister:
                     'withdrawal_requests' : {
 
                     }
-                }
-            )
+                })
+        wallet = db['Wallet']
         wallet_data = wallet.find_one({})
         sales,expenses = self.calculate_sales_and_expenses(wallet_data['transactions'])
         wallet_data['sales'] = sales
         wallet_data['expenses'] = expenses
+        wallet_data['available_funds'] = self.calculate_held_funds(wallet_data['transactions'],wallet_data['hold_period'])
+        context = {}
+        context['user_info'] = info
+        context['wallet_data'] = wallet_data
 
 
-
-        return render(request, 'Seller_wallet/Wallet.html',context=info)
+        return render(request, 'Seller_wallet/Wallet.html',context)
 
     def renPayout(self,request):
         info = self.getUser(request)
