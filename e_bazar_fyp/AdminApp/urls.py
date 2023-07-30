@@ -40,7 +40,10 @@ urlpatterns = [
      path('addtocluster/<str:cluster_id>/<str:order_lst>/', obj.addToCluster, name='addtocluster'),
      path('deletecluster/<str:cluster_id>', obj.odelCluster, name='deletecluster'),
      path('delfromcluster/<str:cluster_id>/<str:order_id>/', obj.deleteFromCluster, name='delfromcluster'),
-path('clusterdelivered/<str:cluster_id>/<str:order_id>/', obj.oDelivered, name='clusterdelivered'),
-path('allclsdelivered/<str:cluster_id>', obj.ShipWholeCluster, name='allclsdelivered')
+    path('clusterdelivered/<str:cluster_id>/<str:order_id>/', obj.oDelivered, name='clusterdelivered'),
+    path('allclsdelivered/<str:cluster_id>', obj.ShipWholeCluster, name='allclsdelivered'),
+    path('transactions/', obj.viewTransactions, name='viewTransactions'),
+    
+
 
 ]
