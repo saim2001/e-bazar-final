@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
 import pprint
+import datetime
 
 # Create your views here.
 from django.http import HttpResponse
@@ -585,24 +586,57 @@ class Verification:
          return redirect('oClusterDetails',cluster_id)
 
     def ShipWholeCluster(self,request,cluster_id):
-        try:
-            database = utils.connect_database("E-Bazar")
-            clusters = database['Clusters']
-            cluster = clusters.find_one({'_id': ObjectId(cluster_id)})
-            orders = database['Orders']
-            count = 0
+        # try:
+            
+        database = utils.connect_database("E-Bazar")
+        clusters = database['Clusters']
+        cluster = clusters.find_one({'_id': ObjectId(cluster_id)})
+        orders = database['Orders']
+        count = 0
+        for order in cluster['orders']:
+            db_order = orders.find_one({'_id': ObjectId(order)})
+            if db_order['status'] == 'delivered':
+                count += 1
+        if count == len(cluster['orders']):
+            cluster['status'] = 'delivered'
+            wallet = database['Wallet']
+            wallet_data = wallet.find_one({})
+            alrdy_created = []
+            for transaction in wallet_data['transactions']:
+                if str(transaction['order_id']) in cluster['orders']:
+                    transaction['status'] = 'delivered'
+                    vndr_db = utils.connect_database(str(transaction['beneficiary']))
+                    vndr_wallet = vndr_db['Wallet']
+                    vndr_wallet_data = vndr_wallet.find_one({})
+                    vndr_wallet_data['balance'] += transaction['amount']
+                    vndr_wallet.update_one({'_id':vndr_wallet_data['_id']},{'$set':vndr_wallet_data})
+                    alrdy_created.append(cluster['orders'])
             for order in cluster['orders']:
-                db_order = orders.find_one({'_id': ObjectId(order)})
-                if db_order['status'] == 'delivered':
-                    count += 1
-            if count == len(cluster['orders']):
-                cluster['status'] = 'delivered'
-                messages.success(request, 'Status updated successfully')
-                clusters.update_one({'_id': ObjectId(cluster_id)}, {'$set': cluster})
-            else:
-                messages.warning(request, 'Cannot mark delivered until all orders delivered')
-        except:
-            messages.error(request, 'Failed to update status')
+                if order not in alrdy_created:
+                    ord = orders.find_one({'_id':ObjectId(order)})
+                    for i in ord['products']:
+                        transacion = {}
+                        transacion['date'] = datetime.datetime.now()
+                        transacion['amount'] = i['subtotal']
+                        transacion['order_id'] = ord['_id']
+                        transacion['product_id'] = i['productId']
+                        transacion['donor'] = ObjectId(ord['customerId'])
+                        transacion['beneficiary'] = ObjectId(i['vendorId'])
+                        transacion['status'] = 'delivered'
+                        wallet_data['transactions'].append(transacion)
+                        vndr_db = utils.connect_database(str(transaction['beneficiary']))
+                        vndr_wallet = vndr_db['Wallet']
+                        vndr_wallet_data = vndr_wallet.find_one({})
+                        vndr_wallet_data['balance'] += transacion['amount']
+                        vndr_wallet.update_one({'_id':vndr_wallet_data['_id']},{'$set':vndr_wallet_data})
+            wallet.update_one({'_id':wallet_data['_id']},{"$set":wallet_data})
+
+            messages.success(request, 'Status updated successfully')
+            clusters.update_one({'_id': ObjectId(cluster_id)}, {'$set': cluster})
+        else:
+            messages.warning(request, 'Cannot mark delivered until all orders delivered')
+        # except:
+        #     messages.error(request, 'Failed to update status')
         return redirect('oClusterDetails', cluster_id)
     def admin(self,request):
        

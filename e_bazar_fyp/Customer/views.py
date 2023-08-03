@@ -261,7 +261,7 @@ class Customer:
 
         return render(request, 'register/register.html')
 
-    def order(self,request):
+    def order(self,request,pay_type):
 
         customer_id= self.session_check(request)
         if customer_id is None:
@@ -363,6 +363,20 @@ class Customer:
                     del VendOrder['vendorId']
                     del VendOrder['updUnits']
                     specVendorOrders.insert_one(VendOrder)
+                if pay_type == 'card' :
+                    wallet = utils.connect_database('E-Bazar','Wallet')
+                    wallet_data = wallet.find_one({})
+                    for i in order['products']:
+                        transacion = {}
+                        transacion['date'] = now
+                        transacion['amount'] = i['subtotal']
+                        transacion['order_id'] = order['_id']
+                        transacion['product_id'] = i['productId']
+                        transacion['donor'] = ObjectId(order['customerId'])
+                        transacion['beneficiary'] = ObjectId(i['vendorId'])
+                        transacion['status'] = 'not delivered'
+                        wallet_data['transactions'].append(transacion)
+                    wallet.update_one({'_id':wallet_data['_id']},{"$set":wallet_data})
 
                 print("All order")
                 print(order)

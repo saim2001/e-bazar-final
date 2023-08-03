@@ -218,11 +218,8 @@ class vendorRegister:
                 {
                     'balance' : 0,
                     'hold_period' : 2,
-                    'transactions' : {
-                    },
-                    'withdrawal_requests' : {
-
-                    }
+                    'transactions' : [],
+                    'withdrawal_requests' : []
                 })
         wallet = db['Wallet']
         wallet_data = wallet.find_one({})

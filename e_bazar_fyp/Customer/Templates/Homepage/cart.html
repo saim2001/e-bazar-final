@@ -79,11 +79,76 @@
                 </tr>
                 
             </table>
-            <button class= "normal-button" ><a style="text-decoration: none;color: white;" href="{% url 'Customer:order' %}" class="button">Proceed to checkout</a></button>
-        </div>
+            <button class= "normal-button" ><a style="text-decoration: none;color: white;" id="payment" href="#" class="button">Proceed to checkout</a></button>
+            <br><br>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="cashOnDelivery" value="cash">
+              <label class="form-check-label" for="cashOnDelivery">
+                Cash on Delivery
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="cardPayment" value="card">
+              <label class="form-check-label" for="cardPayment">
+                Credit Card
+              </label>
+            </div>
+            <br>
+            <div class="card" id="creditCardForm" style="display: none;">
+              <div class="card-header">
+                Card Information
+              </div>
+              <div class="card-body">
+                <form>
+                  <div class="mb-3">
+                    <label for="cardNumber" class="form-label">Card Number</label>
+                    <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="expirationDate" class="form-label">Expiration Date</label>
+                      <input type="text" class="form-control" id="expirationDate" placeholder="MM/YY" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="cvv" class="form-label">CVV</label>
+                      <input type="text" class="form-control" id="cvv" placeholder="123" required>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="cardholderName" class="form-label">Cardholder's Name</label>
+                    <input type="text" class="form-control" id="cardholderName" placeholder="John Doe" required>
+                  </div>
+                </form>
+              </div>
+            </div>
+            
+          </div>
+        
     
 </section>
 <script>
+
+const cardPaymentRadio = document.getElementById('cardPayment');
+    const creditCardForm = document.getElementById('creditCardForm');
+    const cashOnDeliveryRadio = document.getElementById('cashOnDelivery');
+
+    cardPaymentRadio.addEventListener('change', function() {
+      if (this.checked) {
+        creditCardForm.style.display = 'block';
+      } else {
+        creditCardForm.style.display = 'none';
+      }
+      chk_btn = document.getElementById('payment');
+      chk_btn.href = "{% url 'Customer:order' 'card' %}";
+    });
+
+    cashOnDeliveryRadio.addEventListener('change', function() {
+      if (this.checked) {
+        creditCardForm.style.display = 'none';
+        chk_btn = document.getElementById('payment');
+      chk_btn.href = "{% url 'Customer:order' 'cod' %}";
+      }
+    });
   var cart_js = JSON.parse('{{ cart_js|escapejs }}');
   const cart= document.getElementsByClassName("cartItems");
 for (var i = 0; i < cart.length; i++ ){
