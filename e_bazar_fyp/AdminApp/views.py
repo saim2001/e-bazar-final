@@ -2,6 +2,8 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 import pprint
 import datetime
+import schedule
+import time
 
 # Create your views here.
 from django.http import HttpResponse
@@ -604,7 +606,7 @@ class Verification:
             alrdy_created = []
             for transaction in wallet_data['transactions']:
                 if str(transaction['order_id']) in cluster['orders']:
-                    transaction['status'] = 'delivered'
+                    transaction['status'] = 'pending'
                     vndr_db = utils.connect_database(str(transaction['beneficiary']))
                     vndr_wallet = vndr_db['Wallet']
                     vndr_wallet_data = vndr_wallet.find_one({})
@@ -622,7 +624,7 @@ class Verification:
                         transacion['product_id'] = i['productId']
                         transacion['donor'] = ObjectId(ord['customerId'])
                         transacion['beneficiary'] = ObjectId(i['vendorId'])
-                        transacion['status'] = 'delivered'
+                        transacion['status'] = 'pending'
                         wallet_data['transactions'].append(transacion)
                         vndr_db = utils.connect_database(str(transaction['beneficiary']))
                         vndr_wallet = vndr_db['Wallet']
@@ -643,6 +645,45 @@ class Verification:
      
         return render(request, 'Verification/main.html')
 
+    def check_clearance(self,transactions,holding_period):
+    # Retrieve transactions under the hold_period and sum up the amounts
+        current_date = datetime.datetime.now()
+        try:
+            trans_date = datetime.datetime.strptime(str(transactions['date']),"%Y-%m-%d %H:%M:%S")
+        except:
+            trans_date = datetime.datetime.strptime(str(transactions['date']),"%Y-%m-%d %H:%M:%S.%f")
+        time_diff = current_date - trans_date
+        if transactions['status'] == 'pending' and time_diff > datetime.timedelta(minutes=holding_period):
+            return True
+        return False
+
+    def clear_payments(self,request):
+        database = utils.connect_database('E-Bazar')
+        wallet = database['Wallet']
+        wallet_data = wallet.find_one({})
+        uncleared_pay = False
+        for transaction in wallet_data['transactions']:
+            print('=>Filtering transactions')
+            if self.check_clearance(transaction,wallet_data['hold_period']) == True:
+                uncleared_pay = True
+                fees = (transaction['amount']) * (wallet_data['fee']/100)
+                wallet_data['balance'] += fees
+                vndr_db = utils.connect_database(str(transaction['beneficiary']))
+                vndr_wallet = vndr_db['Wallet']
+                vndr_wallet_data = vndr_wallet.find_one({})
+                vndr_wallet_data['transactions'].append(
+                    {
+                        'date' : transaction['date'],
+                        'type' : 'credit',
+                        'amount' : transaction['amount'] - fees,
+                        'description' : 'sales fund'
+                    }
+                )
+                transaction['status'] = 'cleared'
+        if uncleared_pay == True:
+            vndr_wallet.update_one({'_id':vndr_wallet_data['_id']},{'$set':vndr_wallet_data})
+        wallet.update_one({'_id':wallet_data['_id']},{"$set":wallet_data})
+        return redirect('oClusters','delivered')
     def home(self,request):
         if request.method=='POST':
             status= request.POST['status']
@@ -739,3 +780,12 @@ class Verification:
 
 
 
+# def your_function():
+#     ver = Verification()
+#     return ver.clear_payments()
+# # Schedule the function to run every 10 seconds
+# schedule.every(10).seconds.do(your_function)
+
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)
