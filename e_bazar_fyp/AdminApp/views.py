@@ -780,6 +780,7 @@ class Verification:
 
 
 
+
 # def your_function():
 #     ver = Verification()
 #     return ver.clear_payments()
@@ -789,3 +790,4 @@ class Verification:
 # while True:
 #     schedule.run_pending()
 #     time.sleep(1)
+
