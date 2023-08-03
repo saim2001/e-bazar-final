@@ -735,7 +735,6 @@ class Verification:
                 allvendorsDict["disputed"].append(vendorInfo)
         print(allvendorsDict)
         return render(request, "AdminPanel/verification.html", {"vendors":allvendorsDict})
-
-
-
-
+    
+    def viewTransactions(self,request):
+        return render(request, 'Verification/transactions.html')
