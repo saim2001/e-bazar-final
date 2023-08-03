@@ -20,7 +20,7 @@ class Customer:
             rat = ['dark'] * 5
             return rat
         else:
-            rating = int(reviews_count["rate"]) / int(reviews_count["length"])
+            rating = int(reviews_count["rate"]) 
             rating_lst = []
             for i in range(1, 6):
                 if i <= rating:
@@ -63,16 +63,27 @@ class Customer:
 
         customer_orders = Orders.find({'customerId':request.session["Customer_verify"] })
         orders = []
+        js_orders=[]
         for order in customer_orders:
             products_info = []
             for product in order['products']:
                 order_prod = products.find_one({'_id':ObjectId(product['productId'])})
-                products_info.append(order_prod['name'])
-            order['product_info'] = products_info
-            orders.append(order)
-        context = {'orders':orders}
-        print(context)
+                tempProductInfo={'name':order_prod['name'],'id':str(product['productId'])}
+                if 'varId' in product:
+                    print('yes')
+                    tempProductInfo['varId']= product['varId']
+                    print(tempProductInfo)
+
+                products_info.append(tempProductInfo)
+            single_order={'product_info':products_info, 'order_id':str(order['_id']),'orderCreated':order['orderCreated'],'status':order['status']}
+            orders.append(single_order)
+            temp_singleorder= single_order.copy()
+            del temp_singleorder['orderCreated']
+            js_orders.append(temp_singleorder )
+            js_orders_data= json.dumps(js_orders)
+        context = {'orders':orders,'js_orders':js_orders_data}
         return render(request,'Homepage/orders.html',context)
+    
     def getRelatedProducts(self,list,id):
         all_products_lst=[]
         for i in list:
@@ -659,6 +670,69 @@ class Customer:
             return redirect("Customer:b2bhome")
         else:
             return redirect("Customer:home")
+        
+
+    # def product_search_view(self,request):
+    #     query = request.GET.get('search_name')
+
+    #     if query:
+    #         # Perform case-insensitive "contains" match on the product name
+    #         search_query = {
+    #             "name__icontains": query,
+    #         }
+    #         database = utils.connect_database("E-Bazar", "Products")
+    #         results = database.(search_query)
+
+    #         # Sort the results based on relevance and rating (high-to-low)
+    #         sorted_results = results.sort([("name", 1), ("rating", -1)])
+    #     else:
+    #         # If no query provided, return all products sorted by rating in descending order (high-to-low rating)
+    #         sorted_results = Product.objects.mongo_find().sort([("rating", -1)])
+
+    #     return render(request, 'search_results.html', {'products': sorted_results})
+
+    def reviews(self,request,order_id):
+
+        if request.method=='POST':
+            Orders = utils.connect_database('E-Bazar','Orders')
+            productsCol = utils.connect_database('E-Bazar','Products')
+
+
+            reviewLst=[]
+            getOrder = Orders.find_one({'_id':ObjectId(order_id) })
+            for product in getOrder['products']:
+                productSep= productsCol.find_one({'_id':product['productId']})
+                vendorProductColl= utils.connect_database(str(productSep['vendorId']),'Products')
+                if 'varId' in product:
+                    name= str(product['productId'])+'_'+product['varId']
+                else:
+                    name= str(product['productId'])
+                rating= request.POST[name]
+                rateDes= request.POST['text'+name]
+                rateCount= productSep['reviews']['count']['rate']
+                noReviews= productSep['reviews']['count']['length']
+                netRate= ((int(rateCount)*int(noReviews))+ int(rating))/(noReviews+1)
+                filter = {'_id': product['productId']} 
+                update1 = {'$set': {'reviews.count.rate': netRate}}
+                update2 = {'$set': {'reviews.count.length': int(noReviews)+1}}           
+                result1 = productsCol.update_one(filter, update1)
+                result2 = productsCol.update_one(filter, update2)
+                vendorProductColl.update_one(filter, update1)
+                vendorProductColl.update_one(filter, update2)
+                print('don')                
+                print(result1,result2)
+                
+
+            filterOrder = {'_id': order_id} 
+            updateOrder = {'$set': {'reviews_status': 'reviewed'}}
+            Orders.update_one(filterOrder, updateOrder)
+
+
+
+            return redirect('Customer:orders')
+
+
+
 
 
 
